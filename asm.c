@@ -94,7 +94,7 @@ uint16_t assembleLine(char *in){
                 }
                 //Make sure that a register was specified and hop over the @
                 if(operand[0] != RDELIM){
-                    fprintf(stderr,"Missing @ sign in Rs specification, got%s\n",operand);
+                    fprintf(stderr,"Missing @ sign in Rs specification\n");
                     exit(1);
                 }
                 operand++;
