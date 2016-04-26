@@ -5,9 +5,9 @@
 #include <stdint.h>
 #define RDELIM '@'
 #define COMDELIM '#'
-#define MAX_LINE 20
-#define N_INSTRUCTIONS 10
-
+#define MAX_LINE 80
+//Index of the loadi instruction in the ISA
+#define LOADI_IDX 6
 void stripspace(char *s){
     char* i = s;
     char* j = s;
@@ -20,8 +20,8 @@ void stripspace(char *s){
     *i = 0;
 }
 uint16_t assembleLine(char *in){
-    const char *isa[] = {"sll","srl","add","sub","and","xnor","loadi","jz","jnz","stop"};
-    const uint8_t opcodes[] = {0b00000000,0b00000001,0b00000010,0b00000011,0b00000100,0b00000101,0b00001010,0b00001000,0b00001001,0b00001111};
+    const char *isa[] = {"sll","srl","add","sub","and","xnor","loadi","jz","jnz","cmp","stop"};
+    const uint8_t opcodes[] = {0b00000000,0b00000001,0b00000010,0b00000011,0b00000100,0b00000101,0b00001010,0b00001000,0b00001001,0b00000110,0b00001111};
     uint16_t output = 0;
     uint16_t rs=0,rt=0,rd=0,imm=0;
     char *op,*operand;
@@ -32,8 +32,8 @@ uint16_t assembleLine(char *in){
     assert(strlen(in) < MAX_LINE);
     strncpy(temp,in,MAX_LINE);
     op=strsep(&stringp," ");
-    for(i=0;i<N_INSTRUCTIONS+1;i++){
-        if(i == N_INSTRUCTIONS){
+    for(i=0;i<sizeof(opcodes)+1;i++){
+        if(i == sizeof(opcodes)){
             //All mnemonics compared!
             fprintf(stderr,"Invalid Instruction: %s\n",op);
             exit(1);
@@ -72,8 +72,8 @@ uint16_t assembleLine(char *in){
                 //I or J Type, next token is the immediate
                 imm = atoi(stringp);
                 imm = imm & 0x00FF;
-                if((opcodes[i] & 0x02) != 0){
-                    //I type
+                if(i == LOADI_IDX){
+                    //I type (loadi)
                     printf("I: Op=%#02x, Rd=%#02x, Imm=%#02x",opcodes[i],rd,imm);
                     rd = ((rd & 0b00001111) << 8);
                     output |= rd | imm;
@@ -156,15 +156,19 @@ int main(int argc, char **argv){
         //Read a line
         if(fgets(line,MAX_LINE,ifp) == NULL)
             break;
+        if(strlen(line) >= MAX_LINE-1){
+            fprintf(stderr, "Line %i too long!\n", lctr);
+            exit(1);
+        }
         //Valid line
         printf("Line %d: ",lctr);
         if(strlen(line) < 2){
             printf("empty line\n");
-            continue;
+            goto cont;
         }
         if(line[0] == COMDELIM){
             printf("comment\n");
-            continue;
+            goto cont;
         }
         //Clobber newline
         nu_line = strrchr(line,'\n');
@@ -175,7 +179,7 @@ int main(int argc, char **argv){
         //print and save results
         printf(" | %s -> %#04x\n",line,asmres);
         fprintf(ofp,"%04X",asmres);
-
+cont:
         lctr++;
     }
     fclose(ifp);
