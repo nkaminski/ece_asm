@@ -20,8 +20,8 @@ void stripspace(char *s){
     *i = 0;
 }
 uint16_t assembleLine(char *in){
-    const char *isa[] = {"sll","srl","add","sub","and","xnor","loadi","jz","jnz","cmp","stop"};
-    const uint8_t opcodes[] = {0b00000000,0b00000001,0b00000010,0b00000011,0b00000100,0b00000101,0b00001010,0b00001000,0b00001001,0b00000110,0b00001111};
+    const char *isa[] = {"sll","srl","add","sub","and","xnor","loadi","jz","jnz","stop"};
+    const uint8_t opcodes[] = {0b00000000,0b00000001,0b00000010,0b00000011,0b00000100,0b00000101,0b00001010,0b00001000,0b00001001,0b00001111};
     uint16_t output = 0;
     uint16_t rs=0,rt=0,rd=0,imm=0;
     char *op,*operand;
